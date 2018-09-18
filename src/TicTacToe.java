@@ -40,6 +40,38 @@ public class TicTacToe {
 		}
 		printBoard(board, dim);
 		// time to input loop, child
+		// get the first command
+		System.out.print("Take the first move, player X\n>");
+		char player = 'X';
+		String input = scan.nextLine();
+		// do the loop logic
+		while (!input.equals("quit") && !isWinner(board)) {
+			// this is kinda terrible code
+			int[] command = null;
+			try {
+				command = parseCommand(input, dim);
+				if (board[command[0]][command[1]][command[2]] != ' ') {
+					command = null;
+					throw new Exception();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.out.println("your command is invalid. try again\n>");
+			}
+			// check if that worked
+			if (command != null) {
+				try {
+					board[command[0]][command[1]][command[2]] = player;
+					player = player == 'X' ? 'O' : 'X';
+					printBoard(board, dim);
+					System.out.print("Take the next move, player " + player + "\n>");
+				} catch (Exception e) {
+					System.out.println("your command is invalid. try again\n>");
+				}
+
+			}
+			input = scan.nextLine();
+		}
 		scan.close();
 	}
 
@@ -55,7 +87,7 @@ public class TicTacToe {
 			for (int i = 0; i < board.length; i++) {
 				// handle the number above the boards
 				// pad the number
-				System.out.print(" ");
+				System.out.print("  ");
 				for (int j = 0; j < board.length - 1; j++) {
 					System.out.print(" ");
 				}
@@ -84,7 +116,7 @@ public class TicTacToe {
 	public static void print2D(char[][] board) {
 
 		// print the letters for the columns
-		System.out.print(" ");
+		System.out.print("  ");
 		for (int i = 0; i < board.length; i++) {
 			System.out.print(((char) (i + 'A')) + " ");
 		}
@@ -92,7 +124,7 @@ public class TicTacToe {
 		// this uses nested for loops to handle each layer of the board and properly
 		// format it
 		for (int i = 0; i < board.length; i++) {
-			System.out.print(i + 1);
+			System.out.print(i + 1 + " ");
 			for (int j = 0; j < board[i].length; j++) {
 				// this decides whether to use the end-of-line case or not
 				if (j == board[i].length - 1) {
@@ -120,7 +152,7 @@ public class TicTacToe {
 	 * postcondition: none
 	 * BS code
 	 */
-	public static int[] parseInput(String input, int dimension) {
+	public static int[] parseCommand(String input, int dimension) {
 		// Make a scanner to get individual tokens
 		Scanner tokenizer = new Scanner(input);
 		// decide which board to use
@@ -132,10 +164,16 @@ public class TicTacToe {
 		tokenizer.close();
 		// split the token into two parts and store them as ints
 		int column = boardIndex.charAt(0) - 'A';
-		int row = Integer.parseInt(boardIndex.substring(1, 1));
+		int row = Integer.parseInt(boardIndex.charAt(1) + "") - 1;
 		// and return the array
-		int[] e = { dim, column, row };
+		int[] e = { dim, row, column };
 		return e;
 	}
 
+	/* jackson should put a method to figure out if someone has won yet
+	 * 
+	 */
+	public static boolean isWinner(char[][][] board) {
+		return false;
+	}
 }
