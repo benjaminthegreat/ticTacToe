@@ -39,6 +39,8 @@ public class TicTacToe {
 			players = scan.nextInt();
 		}
 		printBoard(board, dim);
+		// here we switch to using nextline
+		scan.nextLine();
 		// time to input loop, child
 		// get the first command
 		System.out.print("Take the first move, player X\n>");
@@ -110,7 +112,7 @@ public class TicTacToe {
 	 * return type: none
 	 * parameters: 2 dimensional char array to print
 	 * precondition: board is initialized
-	 * postcondition: borad is printed
+	 * postcondition: board is printed
 	 * BS and JS code
 	 */
 	public static void print2D(char[][] board) {
@@ -135,7 +137,7 @@ public class TicTacToe {
 			}
 			// this handles the horizontal lines
 			if (i < board[i].length - 1) {
-				System.out.print(" ");
+				System.out.print("  ");
 				for (int f = 0; f < 2 * (board.length) - 1; f++) {
 					System.out.print("-");
 				}
@@ -143,6 +145,21 @@ public class TicTacToe {
 			}
 		}
 		System.out.println();
+	}
+
+	/* random ai method generates a random move
+	 * parameters: dimension and size of board
+	 * return: an integer array containing the random move
+	 * precondition: none
+	 * postcondition: move is within the board
+	 */
+	public static int[] randomMove(int dim, int size) {
+		Random rand = new Random();
+		int[] move = new int[dim];
+		for (int i = 0; i < dim; i++) {
+			move[i] = rand.nextInt(size);
+		}
+		return move;
 	}
 
 	/* parses a move input and returns the intended coordinates
