@@ -66,7 +66,24 @@ public class TicTacToe {
 					board[command[0]][command[1]][command[2]] = player;
 					player = player == 'X' ? 'O' : 'X';
 					printBoard(board, dim);
-					System.out.print("Take the next move, player " + player + "\n>");
+					// do random AI
+					if (players == 1) {
+						System.out.println("AI turn");
+						// loop until the AI picks a valid move
+						boolean aiMoved = false;
+						while (!aiMoved) {
+							int[] move = randomMove(dim, size);
+							if (board[move[0]][move[1]][move[2]] == ' ') {
+								aiMoved = true;
+								board[move[0]][move[1]][move[2]] = 'O';
+								player = 'X';
+								printBoard(board, dim);
+								System.out.print("Take the next move\n>");
+							}
+						}
+					} else {
+						System.out.print("Take the next move, player " + player + "\n>");
+					}
 				} catch (Exception e) {
 					System.out.println("your command is invalid. try again\n>");
 				}
@@ -155,10 +172,12 @@ public class TicTacToe {
 	 */
 	public static int[] randomMove(int dim, int size) {
 		Random rand = new Random();
-		int[] move = new int[dim];
-		for (int i = 0; i < dim; i++) {
+		int[] move = new int[3];
+		for (int i = 0; i < 3; i++) {
 			move[i] = rand.nextInt(size);
 		}
+		if (dim == 2)
+			move[0] = 0;
 		return move;
 	}
 
@@ -174,7 +193,7 @@ public class TicTacToe {
 		Scanner tokenizer = new Scanner(input);
 		// decide which board to use
 		// initialize a variable for it
-		int dim = dimension == 2 ? 0 : tokenizer.nextInt();
+		int dim = dimension == 2 ? 0 : tokenizer.nextInt() - 1;
 		// now handle parsing the next part
 		String boardIndex = tokenizer.next();
 		// done with the scanner
