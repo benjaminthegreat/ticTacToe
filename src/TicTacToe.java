@@ -38,9 +38,26 @@ public class TicTacToe {
 			System.out.print("e\n>");
 			players = scan.nextInt();
 		}
-		printBoard(board, dim);
-		// here we switch to using nextline
+		// switch over to nextline by trimming the newline character from the input
+		// stream
 		scan.nextLine();
+		boolean hardAI = false;
+		// ask about easy/hard AI if this is a singleplayer 2d game
+		if (dim == 2 && players == 1) {
+			boolean correctAnswer = false;
+			while (!correctAnswer) {
+				System.out.print("Do you want easy or hard AI?\n>");
+				String input = scan.nextLine();
+				if (input.equals("hard")) {
+					hardAI = true;
+					correctAnswer = true;
+				} else if (input.equals("easy")) {
+					correctAnswer = true;
+				}
+			}
+
+		}
+		printBoard(board, dim);
 		// time to input loop, child
 		// get the first command
 		System.out.print("Take the first move, player X\n>");
@@ -73,7 +90,7 @@ public class TicTacToe {
 						System.out.println("AI turn");
 						// loop until the AI picks a valid move
 						boolean aiMoved = false;
-						while (!aiMoved) {
+						while (!aiMoved && !hardAI) {
 							int[] move = randomMove(dim, size);
 							if (board[move[0]][move[1]][move[2]] == ' ') {
 								aiMoved = true;
@@ -85,10 +102,20 @@ public class TicTacToe {
 								System.out.print("Take the next move\n>");
 							}
 						}
+						if (hardAI) {
+							int[] move = smartMove2d(board[0]);
+							board[0][move[1]][move[2]] = 'O';
+							player = 'X';
+							printBoard(board, dim);
+							if (isWinner(board))
+								break;
+							System.out.print("Take the next move\n>");
+						}
 					} else {
 						System.out.print("Take the next move, player " + player + "\n>");
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					System.out.println("your command is invalid. try again\n>");
 				}
 
@@ -185,6 +212,464 @@ public class TicTacToe {
 		return move;
 	}
 
+	/* smart ai method generates an optimal move
+	 * parameters: board and dimension
+	 * return: the optimal move
+	 * precondition: none
+	 * postcondition: an optimal move is returned
+	 */
+	public static int[] smartMove2d(char[][] board) {
+		// first, check for a winning move
+		// every space must be checked for n-1 in a row sections with a space at the end
+		for (int i = 0; i < board.length; i++) {
+			for (int j = 0; j < board.length; j++) {
+				// this runs for each square on the board
+				// determine if it's my square
+				if (board[i][j] != 'O') {
+					continue;
+				}
+				// now check for the sections
+				// horizontal, vertical, and each diagonal need to be checked
+				int horizontalInARow = 0;
+				int verticalInARow = 0;
+				int fortyFiveDegreesInARow = 0;
+				int oneHundredAndThirtyFiveDegreesInARow = 0;
+				// horizontal, positive
+				for (int k = j + 1; k < board.length; k++) {
+					if (board[i][k] == board[i][j]) {
+						horizontalInARow++;
+					}
+					if (horizontalInARow == board.length - 1) {
+						if (board[i][k] == ' ') {
+							int[] move = { 0, i, k };
+							return move;
+						}
+					}
+				}
+				// horizontal, negative
+				for (int k = j - 1; k >= 0; k--) {
+					if (board[i][k] == board[i][j]) {
+						horizontalInARow++;
+					}
+					if (horizontalInARow == board.length - 1) {
+						if (board[i][k] == ' ') {
+							int[] move = { 0, i, k };
+							return move;
+						}
+					}
+				}
+				// vertical, positive
+				for (int k = i + 1; k < board.length; k++) {
+					if (board[k][j] == board[i][j]) {
+						verticalInARow++;
+					}
+					if (verticalInARow == board.length - 1) {
+						if (board[k][j] == ' ') {
+							int[] move = { 0, i, k };
+							return move;
+						}
+					}
+				}
+				// vertical, negative
+				for (int k = i - 1; k >= 0; k--) {
+					if (board[k][j] == board[i][j]) {
+						verticalInARow++;
+					}
+					if (verticalInARow == board.length - 1) {
+						if (board[k][j] == ' ') {
+							int[] move = { 0, i, k };
+							return move;
+						}
+					}
+				}
+				// diagonal, 45 degrees
+				// positive
+				for (int k = 0; k < board.length - j && k < board.length - i; k++) {
+					if (board[i + k][j + k] == board[i][j]) {
+						fortyFiveDegreesInARow++;
+					}
+					if (fortyFiveDegreesInARow == board.length - 1) {
+						if (board[i + k][j + k] == ' ') {
+							int[] move = { 0, i + k, j + k };
+							return move;
+						}
+					}
+				}
+				// negative
+				for (int k = 0; k >= j && k >= i; k++) {
+					if (board[i - k][j - k] == board[i][j]) {
+						fortyFiveDegreesInARow++;
+					}
+					if (fortyFiveDegreesInARow == board.length - 1) {
+						if (board[i - k][j - k] == ' ') {
+							int[] move = { 0, i - k, j - k };
+							return move;
+						}
+					}
+				}
+				// diagonal, 135 degrees
+				// positive but this terminology breaks down and is mostly just to help me
+				// comprehend what the code I'm writing does
+				for (int k = 0; k < board.length - j && k >= i; k++) {
+					if (board[i + k][j + k] == board[i][j]) {
+						oneHundredAndThirtyFiveDegreesInARow++;
+					}
+					if (oneHundredAndThirtyFiveDegreesInARow == board.length - 1) {
+						if (board[i + k][j - k] == ' ') {
+							int[] move = { 0, i + k, j - k };
+							return move;
+						}
+					}
+				}
+				// diagonal, 135 degrees
+				// negative but this terminology breaks down and is mostly just to help me
+				// comprehend what the code I'm writing does
+				for (int k = 0; k >= j && k < board.length - i; k++) {
+					if (board[i + k][j + k] == board[i][j]) {
+						oneHundredAndThirtyFiveDegreesInARow++;
+					}
+					if (oneHundredAndThirtyFiveDegreesInARow == board.length - 1) {
+						if (board[i + k][j - k] == ' ') {
+							int[] move = { 0, i + k, j - k };
+							return move;
+						}
+					}
+				}
+			}
+		}
+		// block check, same as above but I want to block, rather than win
+		for (int i = 0; i < board.length; i++) {
+			for (int j = 0; j < board.length; j++) {
+				// this runs for each square on the board
+				// determine if it's my square
+				if (board[i][j] != 'X') {
+					continue;
+				}
+				// now check for the sections
+				// horizontal, vertical, and each diagonal need to be checked
+				int horizontalInARow = 0;
+				int verticalInARow = 0;
+				int fortyFiveDegreesInARow = 0;
+				int oneHundredAndThirtyFiveDegreesInARow = 0;
+				// horizontal, positive
+				for (int k = j + 1; k < board.length; k++) {
+					if (board[i][k] == board[i][j]) {
+						horizontalInARow++;
+					}
+					if (horizontalInARow == board.length - 1) {
+						if (board[i][k] == ' ') {
+							int[] move = { 0, i, k };
+							return move;
+						}
+					}
+				}
+				// horizontal, negative
+				for (int k = j - 1; k >= 0; k--) {
+					if (board[i][k] == board[i][j]) {
+						horizontalInARow++;
+					}
+					if (horizontalInARow == board.length - 1) {
+						if (board[i][k] == ' ') {
+							int[] move = { 0, i, k };
+							return move;
+						}
+					}
+				}
+				// vertical, positive
+				for (int k = i + 1; k < board.length; k++) {
+					if (board[k][j] == board[i][j]) {
+						verticalInARow++;
+					}
+					if (verticalInARow == board.length - 1) {
+						if (board[k][j] == ' ') {
+							int[] move = { 0, i, k };
+							return move;
+						}
+					}
+				}
+				// vertical, negative
+				for (int k = i - 1; k >= 0; k--) {
+					if (board[k][j] == board[i][j]) {
+						verticalInARow++;
+					}
+					if (verticalInARow == board.length - 1) {
+						if (board[k][j] == ' ') {
+							int[] move = { 0, i, k };
+							return move;
+						}
+					}
+				}
+				// diagonal, 45 degrees
+				// positive
+				for (int k = 0; k < board.length - j && k < board.length - i; k++) {
+					if (board[i + k][j + k] == board[i][j]) {
+						fortyFiveDegreesInARow++;
+					}
+					if (fortyFiveDegreesInARow == board.length - 1) {
+						if (board[i + k][j + k] == ' ') {
+							int[] move = { 0, i + k, j + k };
+							return move;
+						}
+					}
+				}
+				// negative
+				for (int k = 0; k <= j && k <= i; k++) {
+					if (board[i - k][j - k] == board[i][j]) {
+						fortyFiveDegreesInARow++;
+					}
+					if (fortyFiveDegreesInARow == board.length - 1) {
+						if (board[i - k][j - k] == ' ') {
+							int[] move = { 0, i - k, j - k };
+							return move;
+						}
+					}
+				}
+				// diagonal, 135 degrees
+				// positive but this terminology breaks down and is mostly just to help me
+				// comprehend what the code I'm writing does
+				for (int k = 0; k < board.length - j && k <= i; k++) {
+					if (board[i - k][j + k] == board[i][j]) {
+						oneHundredAndThirtyFiveDegreesInARow++;
+					}
+					if (oneHundredAndThirtyFiveDegreesInARow == board.length - 1) {
+						if (board[i - k][j + k] == ' ') {
+							int[] move = { 0, i + k, j - k };
+							return move;
+						}
+					}
+				}
+				// diagonal, 135 degrees
+				// negative but this terminology breaks down and is mostly just to help me
+				// comprehend what the code I'm writing does
+				for (int k = 0; k <= j && k < board.length - i; k++) {
+					if (board[i + k][j - k] == board[i][j]) {
+						oneHundredAndThirtyFiveDegreesInARow++;
+					}
+					if (oneHundredAndThirtyFiveDegreesInARow == board.length - 1) {
+						if (board[i + k][j - k] == ' ') {
+							int[] move = { 0, i + k, j - k };
+							return move;
+						}
+					}
+				}
+			}
+		}
+		// fork detection
+		// it only finds the first fork, and technically only finds 3x3-style forks, but
+		// it is somewhat useable. I could write better code that looks further, but it
+		// becomes increasingly complicated
+		// this is a pain to generalize and generalizes poorly
+		// run for every space on the board
+		for (int i = 0; i < board.length; i++) {
+			for (int j = 0; j < board.length; j++) {
+				if (board[i][j] != ' ') {
+					continue;
+				}
+				int[] move = { 0, i, j };
+				// check every space around it for an O
+				boolean hasO = false;
+				if (i - 1 >= 0) {
+					if (board[i - 1][j] == 'O') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+				if (j - 1 >= 0) {
+					if (board[i][j - 1] == 'O') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+				if (j + 1 < board.length) {
+					if (board[i][j + 1] == 'O') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+				if (i < board.length - 1) {
+					if (board[i + 1][j] == 'O') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+				if (j < board.length - 1 && i < board.length - 1) {
+					if (board[i + 1][j + 1] == 'O') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+				if (j > 0 && i < board.length - 1) {
+					if (board[i + 1][j - 1] == 'O') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+				if (j < board.length - 1 && i > 0) {
+					if (board[i - 1][j + 1] == 'O') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+				if (j > 0 && i > 0) {
+					if (board[i - 1][j - 1] == 'O') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+			}
+		}
+		// blocking fork is the same but with X
+		for (int i = 0; i < board.length; i++) {
+			for (int j = 0; j < board.length; j++) {
+				if (board[i][j] != ' ') {
+					continue;
+				}
+				int[] move = { 0, i, j };
+				// check every space around it for an O
+				boolean hasO = false;
+				if (i - 1 >= 0) {
+					if (board[i - 1][j] == 'X') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+				if (j - 1 >= 0) {
+					if (board[i][j - 1] == 'X') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+				if (j + 1 < board.length) {
+					if (board[i][j + 1] == 'X') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+				if (i < board.length - 1) {
+					if (board[i + 1][j] == 'X') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+				if (j < board.length - 1 && i < board.length - 1) {
+					if (board[i + 1][j + 1] == 'X') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+				if (j > 0 && i < board.length - 1) {
+					if (board[i + 1][j - 1] == 'X') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+				if (j < board.length - 1 && i > 0) {
+					if (board[i - 1][j + 1] == 'X') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+				if (j > 0 && i > 0) {
+					if (board[i - 1][j - 1] == 'X') {
+						if (hasO) {
+							return move;
+						}
+						hasO = true;
+					}
+				}
+			}
+		}
+		// and finally, the simple moves
+		// I'm going to simplify a bit here and check the
+		// center center
+		if (board[board.length / 2][board.length / 2] == ' ') {
+			int[] move = { 0, board.length / 2, board.length / 2 };
+			return move;
+		}
+		int b = board.length - 1;
+		// opposite corner
+		if (board[0][0] == 'X') {
+			int[] move = { 0, b, b };
+			return move;
+		}
+		if (board[b][0] == 'X') {
+			int[] move = { 0, 0, b };
+			return move;
+		}
+		if (board[0][b] == 'X') {
+			int[] move = { 0, b, 0 };
+			return move;
+		}
+		if (board[b][b] == 'X') {
+			int[] move = { 0, 0, 0 };
+			return move;
+		}
+		// open corner
+		if (board[0][0] == ' ') {
+			int[] move = { 0, 0, 0 };
+			return move;
+		}
+		if (board[b][0] == ' ') {
+			int[] move = { 0, b, 0 };
+			return move;
+		}
+		if (board[0][b] == ' ') {
+			int[] move = { 0, 0, b };
+			return move;
+		}
+		if (board[b][b] == ' ') {
+			int[] move = { 0, b, b };
+			return move;
+		}
+		// instead of empty side, I will generalize to random move
+		// lel
+		// this is probably ok because it just loops until a random move happens to be a
+		// valid move
+		// it isn't optimal but it probably works
+		// optimally I should make this code recursive with each subset of the board and
+		// looking for a winning move in each board, then returning the first one found
+		// instead of just checking the trivial cases for each subset
+		// obviously I'd need to implement blocking and forking somehow but it would
+		// work
+		// if I hadn't procrastinated this until 11 the night it was due
+		while (true) {
+			int[] randMove = randomMove(board.length, 2);
+			if (board[randMove[1]][randMove[2]] == ' ') {
+				return randMove;
+			}
+		}
+	}
+
 	/* parses a move input and returns the intended coordinates
 	 * parameters: an input that is a move, dimension is for verification checking purposes
 	 * return: the intended coordinates, as an array of integers
@@ -209,6 +694,7 @@ public class TicTacToe {
 		int[] e = { dim, row, column };
 		return e;
 	}
+
 	/* figures out if someone has won
 	 * param: the board
 	 * return: boolean if someone has won yet
@@ -217,18 +703,18 @@ public class TicTacToe {
 	 * JS Code
 	 */
 	public static boolean isWinner(char[][][] board) {
-		for (char[][] board2D: board) {
+		for (char[][] board2D : board) {
 			if (is2DWinner(board2D))
 				return true;
 		}
-		for (int i = 0; i< board.length; i++) {
+		for (int i = 0; i < board.length; i++) {
 			char[][] board2D = new char[board.length][board.length];
-			for (int j = 0; j< board.length;j++) {
+			for (int j = 0; j < board.length; j++) {
 				board2D[j] = board[j][i];
 			}
-			if (is2DWinner(board2D)) 
+			if (is2DWinner(board2D))
 				return true;
-			
+
 		}
 		for (int i = 0; i < board.length; i++) {
 			char[][] board2D = new char[board.length][board.length];
@@ -239,28 +725,26 @@ public class TicTacToe {
 				}
 				board2D[j] = arr;
 			}
-			if (is2DWinner(board2D)) 
+			if (is2DWinner(board2D))
 				return true;
-				
-	
-				
-			
+
 		}
-		//four diagonal ways to win yet unchecked
+		// four diagonal ways to win yet unchecked
 		char[] dia1 = new char[board.length];
 		char[] dia2 = new char[board.length];
 		char[] dia3 = new char[board.length];
 		char[] dia4 = new char[board.length];
 		for (int i = 0; i < board.length; i++) {
 			dia1[i] = board[i][i][i];
-			dia2[i] = board[i][i][board.length-1-i];
-			dia3[i] = board[i][board.length-1-i][board.length-1-i];
-			dia4[i] = board[i][board.length-1-i][i];
+			dia2[i] = board[i][i][board.length - 1 - i];
+			dia3[i] = board[i][board.length - 1 - i][board.length - 1 - i];
+			dia4[i] = board[i][board.length - 1 - i][i];
 		}
 		if (is1DWinner(dia1) || is1DWinner(dia2) || is1DWinner(dia3) || is1DWinner(dia4))
 			return true;
 		return false;
 	}
+
 	/* figures out if someone has won
 	 * param: the board
 	 * return: boolean if someone has won yet
@@ -269,7 +753,7 @@ public class TicTacToe {
 	 * JS Code
 	 */
 	public static boolean is2DWinner(char[][] board) {
-		for (char[] arr: board) {
+		for (char[] arr : board) {
 			if (is1DWinner(arr))
 				return true;
 		}
@@ -285,13 +769,14 @@ public class TicTacToe {
 		char[] dia2 = new char[board.length];
 		for (int i = 0; i < board.length; i++) {
 			dia1[i] = board[i][i];
-			dia2[i] = board[i][board.length-i -1];
+			dia2[i] = board[i][board.length - i - 1];
 		}
-		if (is1DWinner(dia1) || is1DWinner(dia2)) 
+		if (is1DWinner(dia1) || is1DWinner(dia2))
 			return true;
-		
+
 		return false;
 	}
+
 	/* figures out if someone has won
 	 * param:  a 1D array
 	 * return: boolean if someone has won yet
@@ -300,19 +785,20 @@ public class TicTacToe {
 	 * JS Code
 	 */
 	public static boolean is1DWinner(char[] arr) {
-		//placeholder
+		// placeholder
 		char first = '#';
 		if (arr[0] == 'X' || arr[0] == 'O') {
 			first = arr[0];
 		}
-		for (char c: arr) {
+		for (char c : arr) {
 			if (c != first)
 				return false;
 		}
 		System.out.println(first + " WINS!!!");
 		return true;
-			
+
 	}
+
 	/*prints a help menu if called by player
 	 * param: none
 	 * return: none
@@ -321,16 +807,13 @@ public class TicTacToe {
 	 * JS Code
 	 */
 	public static void help() {
-		System.out.println("This is tic tac toe. To enter your symbol, input the coordinates you would like to put it in in the form <letter><number>");
+		System.out.println(
+				"This is tic tac toe. To enter your symbol, input the coordinates you would like to put it in in the form <letter><number>");
 		System.out.println("Example: A1");
-		System.out.println("If playing in 3D, input the number indicating what level you would like to put your symbol in first, then a space, then the location on that level");
+		System.out.println(
+				"If playing in 3D, input the number indicating what level you would like to put your symbol in first, then a space, then the location on that level");
 		System.out.println("Example: 1 A1");
 		System.out.println("you can type quit to quit at any time");
 	}
 
 }
-
-	
-	
-	
-	
