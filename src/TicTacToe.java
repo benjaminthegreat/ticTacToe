@@ -66,6 +66,8 @@ public class TicTacToe {
 					board[command[0]][command[1]][command[2]] = player;
 					player = player == 'X' ? 'O' : 'X';
 					printBoard(board, dim);
+					if (isWinner(board))
+						break;
 					// do random AI
 					if (players == 1) {
 						System.out.println("AI turn");
@@ -78,6 +80,8 @@ public class TicTacToe {
 								board[move[0]][move[1]][move[2]] = 'O';
 								player = 'X';
 								printBoard(board, dim);
+								if (isWinner(board))
+									break;
 								System.out.print("Take the next move\n>");
 							}
 						}
@@ -205,11 +209,128 @@ public class TicTacToe {
 		int[] e = { dim, row, column };
 		return e;
 	}
-
-	/* jackson should put a method to figure out if someone has won yet
-	 * 
+	/* figures out if someone has won
+	 * param: the board
+	 * return: boolean if someone has won yet
+	 * precon: board is populated
+	 * postcon: none
+	 * JS Code
 	 */
 	public static boolean isWinner(char[][][] board) {
+		for (char[][] board2D: board) {
+			if (is2DWinner(board2D))
+				return true;
+		}
+		for (int i = 0; i< board.length; i++) {
+			char[][] board2D = new char[board.length][board.length];
+			for (int j = 0; j< board.length;j++) {
+				board2D[j] = board[j][i];
+			}
+			if (is2DWinner(board2D)) 
+				return true;
+			
+		}
+		for (int i = 0; i < board.length; i++) {
+			char[][] board2D = new char[board.length][board.length];
+			for (int j = 0; j < board.length; j++) {
+				char[] arr = new char[board.length];
+				for (int k = 0; k < board.length; k++) {
+					arr[k] = board[k][j][i];
+				}
+				board2D[j] = arr;
+			}
+			if (is2DWinner(board2D)) 
+				return true;
+				
+	
+				
+			
+		}
+		//four diagonal ways to win yet unchecked
+		char[] dia1 = new char[board.length];
+		char[] dia2 = new char[board.length];
+		char[] dia3 = new char[board.length];
+		char[] dia4 = new char[board.length];
+		for (int i = 0; i < board.length; i++) {
+			dia1[i] = board[i][i][i];
+			dia2[i] = board[i][i][board.length-1-i];
+			dia3[i] = board[i][board.length-1-i][board.length-1-i];
+			dia4[i] = board[i][board.length-1-i][i];
+		}
+		if (is1DWinner(dia1) || is1DWinner(dia2) || is1DWinner(dia3) || is1DWinner(dia4))
+			return true;
 		return false;
 	}
+	/* figures out if someone has won
+	 * param: the board
+	 * return: boolean if someone has won yet
+	 * precon: board is populated
+	 * postcon: none
+	 * JS Code
+	 */
+	public static boolean is2DWinner(char[][] board) {
+		for (char[] arr: board) {
+			if (is1DWinner(arr))
+				return true;
+		}
+		for (int i = 0; i < board.length; i++) {
+			char[] arr = new char[board.length];
+			for (int j = 0; j < board.length; j++) {
+				arr[j] = board[j][i];
+			}
+			if (is1DWinner(arr))
+				return true;
+		}
+		char[] dia1 = new char[board.length];
+		char[] dia2 = new char[board.length];
+		for (int i = 0; i < board.length; i++) {
+			dia1[i] = board[i][i];
+			dia2[i] = board[i][board.length-i -1];
+		}
+		if (is1DWinner(dia1) || is1DWinner(dia2)) 
+			return true;
+		
+		return false;
+	}
+	/* figures out if someone has won
+	 * param:  a 1D array
+	 * return: boolean if someone has won yet
+	 * precon: board is populated
+	 * postcon: none
+	 * JS Code
+	 */
+	public static boolean is1DWinner(char[] arr) {
+		//placeholder
+		char first = '#';
+		if (arr[0] == 'X' || arr[0] == 'O') {
+			first = arr[0];
+		}
+		for (char c: arr) {
+			if (c != first)
+				return false;
+		}
+		System.out.println(first + " WINS!!!");
+		return true;
+			
+	}
+	/*prints a help menu if called by player
+	 * param: none
+	 * return: none
+	 * precon: help is called
+	 * postcon: menu was printed
+	 * JS Code
+	 */
+	public static void help() {
+		System.out.println("This is tic tac toe. To enter your symbol, input the coordinates you would like to put it in in the form <letter><number>");
+		System.out.println("Example: A1");
+		System.out.println("If playing in 3D, input the number indicating what level you would like to put your symbol in first, then a space, then the location on that level");
+		System.out.println("Example: 1 A1");
+		System.out.println("you can type quit to quit at any time");
+	}
+
 }
+
+	
+	
+	
+	
